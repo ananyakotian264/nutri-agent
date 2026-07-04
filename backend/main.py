@@ -53,7 +53,7 @@ app = FastAPI(title="Nutri-Agent API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173","https://nutri-agent.vercel.app"],
+    allow_origins=["http://localhost:5173","https://nutri-agent-mu.vercel.app"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
