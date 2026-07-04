@@ -8,7 +8,8 @@ import MealHistory from "./components/MealHistory";
 
 export default function App() {
   // --- Authentication State ---
-  const [userId, setUserId] = useState(null);
+  // Check localStorage first so they stay logged in after a refresh
+  const [userId, setUserId] = useState(() => localStorage.getItem("nutri_user_id"));
   const [isLogin, setIsLogin] = useState(true);
   const [authForm, setAuthForm] = useState({ username: "", password: "" });
   const [authError, setAuthError] = useState("");
@@ -41,14 +42,15 @@ export default function App() {
     setReply(result.reply);
   }
 
-  // --- Authentication Handler ---
+  // --- Authentication Handlers ---
   const handleAuth = async (e) => {
     e.preventDefault();
     setAuthError("");
     const endpoint = isLogin ? "/login" : "/signup";
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000${endpoint}`, {
+      // NOTE: Ensure your URL here matches your live Render or localhost URL!
+      const res = await fetch(`https://nutri-agent-backend.onrender.com${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(authForm)
@@ -60,10 +62,23 @@ export default function App() {
         throw new Error(data.detail || "Authentication failed");
       }
 
+      // Save to browser storage so it survives a refresh!
+      localStorage.setItem("nutri_user_id", data.user_id);
       setUserId(data.user_id);
+      setAuthForm({ username: "", password: "" }); // Clear the form
+      
     } catch (err) {
       setAuthError(err.message);
     }
+  };
+
+  const handleLogout = () => {
+    // Completely wipe the user's data from memory and storage
+    localStorage.removeItem("nutri_user_id");
+    setUserId(null);
+    setProfile(null);
+    setMeals([]);
+    setTotals({ calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0 });
   };
 
   // =========================================================================
@@ -138,9 +153,12 @@ export default function App() {
       <header className="border-b-[3px] border-ink px-6 py-4 flex items-baseline justify-between">
         <h1 className="font-display text-2xl">Nutri-Agent</h1>
         <div className="flex items-center gap-4">
-          <p className="font-mono text-xs text-ink/50">groq + usda + mcp</p>
-          {/* Simple logout button */}
-          <button onClick={() => setUserId(null)} className="text-xs font-bold border-2 border-ink px-2 py-1 hover:bg-ink hover:text-paper transition-colors">
+          <p className="font-mono text-xs text-ink/50 hidden sm:block">groq + usda + mcp</p>
+          {/* Functional logout button */}
+          <button 
+            onClick={handleLogout} 
+            className="text-xs font-bold border-2 border-ink px-3 py-1 bg-white hover:bg-ink hover:text-paper transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-[2px] active:translate-x-[2px]"
+          >
             LOGOUT
           </button>
         </div>
@@ -148,13 +166,11 @@ export default function App() {
 
       <main className="max-w-5xl mx-auto px-6 py-8 grid md:grid-cols-2 gap-8">
         <section>
-          {/* Passed userId down so the component can include it in the POST request */}
           <ProfileSetup userId={userId} profile={profile} onSaved={setProfile} />
           <NutritionLabel totals={totals} targets={profile} />
         </section>
 
         <section className="space-y-4">
-          {/* Passed userId down so FoodLogger can send it to the backend */}
           <FoodLogger userId={userId} onResult={handleResult} />
 
           {reply && (
