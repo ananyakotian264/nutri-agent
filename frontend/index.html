@@ -423,6 +423,7 @@
     <div class="nav-right">
       <button class="btn-reset" onclick="resetDay()">Reset Day</button>
       <div class="badge-streak"><span>🔥</span> <span id="nav-streak">0d</span> streak</div>
+      <button class="btn-reset" style="color: var(--fat); border-color: rgba(236, 72, 153, 0.3);" onclick="handleLogout()">Logout</button>
       <div class="avatar" id="nav-avatar" onclick="document.getElementById('profile-modal').style.display='flex'" title="Edit Profile">?</div>
     </div>
   </nav>
@@ -552,7 +553,7 @@
 <script>
   // --- Global Backend State ---
   const API_URL = "https://nutri-agent-backend.onrender.com";
-  let currentUserId = null;
+  let currentUserId = localStorage.getItem("nutri_user_id") || null;
   let authMode = 'login'; // 'login' or 'signup'
 
   // --- Global State (For UI Rendering) ---
@@ -623,8 +624,26 @@
 
       // Success! Save user ID and hide auth modal
       currentUserId = data.user_id;
+      localStorage.setItem("nutri_user_id", currentUserId); // <-- ADD THIS LINE
       document.getElementById('auth-modal').style.display = 'none';
       showToast(`✅ Successfully ${authMode === 'login' ? 'logged in' : 'signed up'}!`);
+
+     function handleLogout() {
+    // 1. Wipe the memory
+    localStorage.removeItem("nutri_user_id");
+    currentUserId = null;
+    
+    // 2. Clear the screen data
+    STATE.profile.name = '';
+    STATE.meals = [];
+    document.getElementById('nav-avatar').innerText = '?';
+    updateDashboard();
+    
+    // 3. Show the login screen again
+    document.getElementById('auth-modal').style.display = 'flex';
+    document.getElementById('inp-password').value = ''; // clear password field
+    showToast("👋 Logged out successfully");
+  }
       
       // Auto-set the name field in the profile modal for convenience
       document.getElementById('inp-name').value = username;
