@@ -290,40 +290,6 @@ Nutri-Agent/
 
 ---
 
-# 📷 Screenshots
-
-## Login
-
-```
-Add Screenshot Here
-```
-
----
-
-## Dashboard
-
-```
-Add Screenshot Here
-```
-
----
-
-## AI Food Logging
-
-```
-Add Screenshot Here
-```
-
----
-
-## Daily Progress
-
-```
-Add Screenshot Here
-```
-
----
-
 # ⚙ How It Works
 
 ## Step 1
